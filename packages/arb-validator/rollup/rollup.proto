@@ -28,10 +28,12 @@ message NodeBuf {
     structures.VMProtoDataBuf vmProtoData = 5;
 
     common.HashBuf machineHash = 6;
-    uint64 depth = 7;
-    common.HashBuf nodeDataHash = 8;
-    common.HashBuf innerHash = 9;
-    common.HashBuf hash = 10;
+    structures.ExecutionAssertionBuf assertion = 7;
+    uint64 depth = 8;
+    common.HashBuf nodeDataHash = 9;
+    common.HashBuf innerHash = 10;
+    common.HashBuf hash = 11;
+    common.HashBuf assertionTxHash = 12;
 }
 
 message NodeGraphBuf {

@@ -255,17 +255,23 @@ func (node *Node) MarshalForCheckpoint(ctx structures.CheckpointContext) *NodeBu
 	if node.disputable != nil {
 		disputableNodeBuf = node.disputable.MarshalToBuf()
 	}
+	var assertionBuf *structures.ExecutionAssertionBuf
+	if node.assertion != nil {
+		assertionBuf = structures.MarshalAssertionForCheckpoint(node.assertion, ctx)
+	}
 	return &NodeBuf{
-		PrevHash:       prevHashBuf,
-		Deadline:       node.deadline.MarshalToBuf(),
-		DisputableNode: disputableNodeBuf,
-		LinkType:       uint32(node.linkType),
-		VmProtoData:    node.vmProtoData.MarshalToBuf(),
-		MachineHash:    machineHash,
-		Depth:          node.depth,
-		NodeDataHash:   node.nodeDataHash.MarshalToBuf(),
-		InnerHash:      node.innerHash.MarshalToBuf(),
-		Hash:           node.hash.MarshalToBuf(),
+		PrevHash:        prevHashBuf,
+		Deadline:        node.deadline.MarshalToBuf(),
+		DisputableNode:  disputableNodeBuf,
+		LinkType:        uint32(node.linkType),
+		VmProtoData:     node.vmProtoData.MarshalToBuf(),
+		MachineHash:     machineHash,
+		Assertion:       assertionBuf,
+		Depth:           node.depth,
+		NodeDataHash:    node.nodeDataHash.MarshalToBuf(),
+		InnerHash:       node.innerHash.MarshalToBuf(),
+		Hash:            node.hash.MarshalToBuf(),
+		AssertionTxHash: node.assertionTxHash.MarshalToBuf(),
 	}
 }
 
@@ -275,19 +281,22 @@ func (m *NodeBuf) UnmarshalFromCheckpoint(ctx structures.RestoreContext, chain *
 		disputableNode = m.DisputableNode.Unmarshal()
 	}
 	node := &Node{
-		prev:         nil,
-		deadline:     m.Deadline.Unmarshal(),
-		disputable:   disputableNode,
-		linkType:     structures.ChildType(m.LinkType),
-		vmProtoData:  m.VmProtoData.Unmarshal(),
-		depth:        m.Depth,
-		nodeDataHash: m.NodeDataHash.Unmarshal(),
-		innerHash:    m.InnerHash.Unmarshal(),
-		hash:         m.Hash.Unmarshal(),
+		deadline:        m.Deadline.Unmarshal(),
+		disputable:      disputableNode,
+		linkType:        structures.ChildType(m.LinkType),
+		vmProtoData:     m.VmProtoData.Unmarshal(),
+		depth:           m.Depth,
+		nodeDataHash:    m.NodeDataHash.Unmarshal(),
+		innerHash:       m.InnerHash.Unmarshal(),
+		hash:            m.Hash.Unmarshal(),
+		assertionTxHash: m.AssertionTxHash.Unmarshal(),
 	}
 
 	if m.MachineHash != nil {
 		node.machine = ctx.GetMachine(m.MachineHash.Unmarshal())
+	}
+	if m.Assertion != nil {
+		node.assertion = m.Assertion.UnmarshalFromCheckpoint(ctx)
 	}
 
 	chain.nodeFromHash[node.hash] = node

@@ -90,3 +90,10 @@ message BlockIdBufList {
     repeated BlockIdBuf bufs = 1;
 }
 
+message ExecutionAssertionBuf {
+    common.HashBuf afterHash = 1;
+    bool   didInboxInsn = 2;
+    uint64 numGas = 3;
+    repeated common.HashBuf messages = 4;
+    repeated common.HashBuf logs = 5;
+}
