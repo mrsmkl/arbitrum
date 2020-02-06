@@ -30,6 +30,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+func (_ArbRollup *ArbRollupTransactor) MakeAssertionCall(ctx context.Context, client *ethclient.Client, from common.Address, contractAddress common.Address, _fields [9][32]byte, _beforePendingCount *big.Int, _prevDeadlineTicks *big.Int, _prevChildType uint32, _numSteps uint64, _timeBoundsBlocks [2]*big.Int, _importedMessageCount *big.Int, _didInboxInsn bool, _numArbGas uint64, _stakerProof [][32]byte) error {
+	return callCheck(ctx, client, from, contractAddress, "makeAssertion", _fields, _beforePendingCount, _prevDeadlineTicks, _prevChildType, _numSteps, _timeBoundsBlocks, _importedMessageCount, _didInboxInsn, _numArbGas, _stakerProof)
+}
+
 // Solidity: function confirmValid(uint256 deadlineTicks, bytes _messages, bytes32 logsAcc, bytes32 vmProtoStateHash, address[] stakerAddresses, bytes32[] stakerProofs, uint256[] stakerProofOffsets) returns()
 func (_ArbRollup *ArbRollupTransactor) ConfirmValidCall(ctx context.Context, client *ethclient.Client, from common.Address, contractAddress common.Address, deadlineTicks *big.Int, _messages []byte, logsAcc [32]byte, vmProtoStateHash [32]byte, stakerAddresses []common.Address, stakerProofs [][32]byte, stakerProofOffsets []*big.Int) error {
 	return callCheck(ctx, client, from, contractAddress, "confirmValid", deadlineTicks, _messages, logsAcc, vmProtoStateHash, stakerAddresses, stakerProofs, stakerProofOffsets)
