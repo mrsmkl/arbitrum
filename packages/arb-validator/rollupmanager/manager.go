@@ -161,6 +161,8 @@ func CreateManagerAdvanced(
 			}
 			man.Unlock()
 
+			time.Sleep(time.Second) // give time for things to settle, post-reorg, before restarting stuff
+
 			chain.Start(runCtx)
 
 			current, err := clnt.CurrentBlockId(runCtx)
@@ -226,7 +228,7 @@ func CreateManagerAdvanced(
 			case <-ctx.Done():
 				return
 			default:
-				time.Sleep(10 * time.Second) // give time for things to settle, post-reorg, before restarting stuff
+
 			}
 		}
 	}()
