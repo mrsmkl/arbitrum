@@ -458,7 +458,7 @@ export class ArbClient {
 
   public call(
     contractAddress: string,
-    sender: string,
+    sender: string | undefined,
     data: string
   ): Promise<Uint8Array> {
     return new Promise((resolve, reject): void => {
