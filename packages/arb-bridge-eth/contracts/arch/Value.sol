@@ -114,6 +114,10 @@ library Value {
     }
 
     function isBuffer(Data memory val) internal pure returns (bool) {
+        return val.typeCode == BUFFER_HASH_TYPECODE;
+    }
+
+    function isBufferData(Data memory val) internal pure returns (bool) {
         return val.typeCode == BUFFER_TYPECODE;
     }
 

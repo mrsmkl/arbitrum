@@ -224,11 +224,22 @@ library Marshaling {
             uint256 nextOffset,
             bytes memory byteData) {
         (uint256 offset, uint8 valType) = extractUint8(data, startOffset);
-        if (valType != Value.bufferTypeCode()) {
+        if (valType != Value.tupleTypeCode() + 2) {
             return (false, offset, new bytes(0));
         }
-        bytes memory bufferData;
-        (offset, bufferData) = deserializeBufferData(data, offset);
+        Value.Data[] memory tupleData;
+        (offset, tupleData) = deserializeTuple(2, data, offset);
+        if (!tupleData[0].isInt() || !tupleData[1].isBufferData()) {
+            return (false, offset, new bytes(0));
+        }
+        bytes memory bufferData = tupleData[1].buffer;
+        if (bufferData.length != tupleData[0].intVal) {
+            bytes memory data2 = bufferData;
+            bufferData = new bytes(tupleData[0].intVal);
+            for (uint i = 0; i < bufferData.length && i < data2.length; i++) {
+                bufferData[i] = data2[i];
+            }
+        }
         return (true, offset, bufferData);
     } 
 
