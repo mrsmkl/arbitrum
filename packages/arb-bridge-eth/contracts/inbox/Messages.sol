@@ -53,7 +53,7 @@ library Messages {
         tupData[2] = Value.newInt(timestamp);
         tupData[3] = Value.newInt(uint256(sender));
         tupData[4] = Value.newInt(inboxSeqNum);
-        tupData[5] = Marshaling.bytesToBytestack(messageData, 0, messageData.length);
+        tupData[5] = Marshaling.bytesToBuffer(messageData, 0, messageData.length);
         return Value.newTuple(tupData);
     }
 
@@ -119,7 +119,7 @@ library Messages {
         }
 
         message.sender = address(uint160((senderRaw)));
-        (valid, offset, message.data) = Marshaling.bytestackToBytes(data, offset);
+        (valid, offset, message.data) = Marshaling.bufferToBytes(data, offset);
         if (!valid) {
             return (false, startOffset, message);
         }

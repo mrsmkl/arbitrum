@@ -53,6 +53,35 @@ library Hashing {
         return keccak256(abi.encodePacked(uint8(Value.tupleTypeCode()), innerHash, valueSize));
     }
 
+    function keccak1(bytes32 b) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(b));
+    }
+
+    function keccak2(bytes32 a, bytes32 b) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(a, b));
+    }
+
+    function bytes32FromArray(bytes memory arr, uint256 offset) internal pure returns (uint256) {
+        uint256 res = 0;
+        for (uint256 i = 0; i < 32; i++) {
+            res = res << 8;
+            res = res | uint256(uint8(arr[offset + i]));
+        }
+        return res;
+    }
+
+    function merkleRoot(bytes memory data, uint256 startOffset, uint256 dataLength, bool pack) internal pure returns (bytes32) {
+        if (dataLength == 32) {
+            return keccak1(bytes32(bytes32FromArray(data, startOffset)));
+        }
+        bytes32 h2 = merkleRoot(data, startOffset + dataLength / 2, dataLength/2, false);
+        if (h2 == keccak1(bytes32(0)) && pack) {
+            return merkleRoot(data, startOffset, dataLength / 2, true);
+        }
+        bytes32 h1 = merkleRoot(data, startOffset, dataLength / 2, false);
+        return keccak2(h1, h2);
+    }
+
     function hash(Value.Data memory val) internal pure returns (bytes32) {
         if (val.typeCode == Value.intTypeCode()) {
             return hashInt(val.intVal);
@@ -65,8 +94,10 @@ library Hashing {
             return preImage.hash();
         } else if (val.typeCode == Value.hashOnlyTypeCode()) {
             return bytes32(val.intVal);
-        } else if (val.typeCode == Value.bufferTypeCode()) {
+        } else if (val.typeCode == Value.bufferHashTypeCode()) {
             return val.bufferHash;
+        } else if (val.typeCode == Value.bufferTypeCode()) {
+            return merkleRoot(val.buffer, 0, val.buffer.length, true);
         } else {
             require(false, "Invalid type code");
         }

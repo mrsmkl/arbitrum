@@ -130,6 +130,17 @@ library Marshaling {
         return (offset, members);
     }
 
+    function deserializeBufferData(bytes memory data, uint256 startOffset) internal pure returns (uint256 offset, bytes memory byteData) {
+        uint256 intVal;
+        (offset, intVal) = deserializeInt(data, startOffset);
+        bytes memory bufferData = new bytes(intVal);
+        for (uint i = 0; i < intVal; i++) {
+            bufferData[i] = data[offset+i];
+        }
+        offset += intVal;
+        return (offset, bufferData);
+    }
+
     function deserialize(bytes memory data, uint256 startOffset)
         internal
         pure
@@ -146,10 +157,14 @@ library Marshaling {
             return (offset, Value.newInt(intVal));
         } else if (valType == Value.codePointTypeCode()) {
             return deserializeCodePoint(data, offset);
-        } else if (valType == Value.bufferTypeCode()) {
+        } else if (valType == Value.bufferHashTypeCode()) {
             bytes32 hashVal;
             (offset, hashVal) = deserializeBytes32(data, offset);
             return (offset, Value.newBuffer(hashVal));
+        } else if (valType == Value.bufferTypeCode()) {
+            bytes memory bufferData;
+            (offset, bufferData) = deserializeBufferData(data, offset);
+            return (offset, Value.newBufferData(bufferData));
         } else if (valType == Value.tuplePreImageTypeCode()) {
             return deserializeHashPreImage(data, offset);
         } else if (valType >= Value.tupleTypeCode() && valType < Value.valueTypeCode()) {
@@ -204,6 +219,18 @@ library Marshaling {
         elems[1] = Value.newBuffer(merkleRoot(data, startOffset, merkleLength, true));
         return Value.newTuple(elems);
     }
+
+    function bufferToBytes(bytes memory data, uint256 startOffset) internal pure returns (bool valid,
+            uint256 nextOffset,
+            bytes memory byteData) {
+        (uint256 offset, uint8 valType) = extractUint8(data, startOffset);
+        if (valType != Value.bufferTypeCode()) {
+            return (false, offset, new bytes(0));
+        }
+        bytes memory bufferData;
+        (offset, bufferData) = deserializeBufferData(data, offset);
+        return (true, offset, bufferData);
+    } 
 
     /**
      * @notice Convert data[startOffset:startOffset + dataLength] into an Arbitrum bytestack value
