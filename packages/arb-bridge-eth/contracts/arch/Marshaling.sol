@@ -161,6 +161,50 @@ library Marshaling {
         require(false, "invalid typecode");
     }
 
+    function keccak1(bytes32 b) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(b));
+    }
+
+    function keccak2(bytes32 a, bytes32 b) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(a, b));
+    }
+
+    function bytes32FromArray(bytes memory arr, uint256 offset) internal pure returns (uint256) {
+        uint256 res = 0;
+        for (uint256 i = 0; i < 32; i++) {
+            res = res << 8;
+            res = res | uint256(uint8(arr[offset + i]));
+        }
+        return res;
+    }
+
+    function merkleRoot(bytes memory data, uint256 startOffset, uint256 dataLength, bool pack) internal pure returns (bytes32) {
+        if (dataLength == 32) {
+            return keccak1(bytes32(bytes32FromArray(data, startOffset)));
+        }
+        bytes32 h2 = merkleRoot(data, startOffset + dataLength / 2, dataLength/2, false);
+        if (h2 == keccak1(bytes32(0)) && pack) {
+            return merkleRoot(data, startOffset, dataLength / 2, true);
+        }
+        bytes32 h1 = merkleRoot(data, startOffset, dataLength / 2, false);
+        return keccak2(h1, h2);
+    }
+
+    function bytesToBuffer(bytes memory data, uint256 startOffset, uint256 dataLength) internal pure returns (Value.Data memory) {
+        Value.Data[] memory elems = new Value.Data[](2);
+        elems[0] = Value.newInt(dataLength);
+        if (dataLength == 0) {
+            elems[1] = Value.newBuffer(keccak1(0));
+            return Value.newTuple(elems);
+        }
+        uint256 merkleLength = 32;
+        while (merkleLength <= dataLength) {
+            merkleLength *= 2;
+        }
+        elems[1] = Value.newBuffer(merkleRoot(data, startOffset, merkleLength, true));
+        return Value.newTuple(elems);
+    }
+
     /**
      * @notice Convert data[startOffset:startOffset + dataLength] into an Arbitrum bytestack value
      * @dev The bytestack object is a series of nested 2 tuples terminating in an empty tuple, ex. (size, (data1, (data2, (data3, ()))))
