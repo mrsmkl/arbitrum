@@ -87,7 +87,7 @@ contract OneStepProof is IOneStepProof, OneStepProofCommon {
             _blockNumber,
             _timestamp,
             _inboxSeqNum,
-            keccak256(_msgData)
+            Messages.messageDataHash(_msgData)
         );
 
         context.inboxMessage = Messages.messageValue(

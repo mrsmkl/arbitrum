@@ -195,6 +195,9 @@ library Marshaling {
 
     function merkleRoot(bytes memory data, uint256 startOffset, uint256 dataLength, bool pack) internal pure returns (bytes32) {
         if (dataLength == 32) {
+            if (startOffset >= data.length) {
+                return keccak1(bytes32(0));
+            }
             return keccak1(bytes32(bytes32FromArray(data, startOffset)));
         }
         bytes32 h2 = merkleRoot(data, startOffset + dataLength / 2, dataLength/2, false);
@@ -241,7 +244,7 @@ library Marshaling {
             }
         }
         return (true, offset, bufferData);
-    } 
+    }
 
     /**
      * @notice Convert data[startOffset:startOffset + dataLength] into an Arbitrum bytestack value

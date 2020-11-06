@@ -27,7 +27,9 @@ const (
 	TypeCodeCodePoint     uint8 = 1
 	TypeCodeHashPreImage  uint8 = 2
 	TypeCodeTuple         uint8 = 3
-	TypeCodeCodePointStub uint8 = 12
+	TypeCodeBufferHash    uint8 = 12
+	TypeCodeBuffer        uint8 = 13
+	TypeCodeCodePointStub uint8 = 14
 )
 
 type Value interface {
@@ -70,6 +72,10 @@ func UnmarshalValueWithType(tipe byte, r io.Reader) (Value, error) {
 		return NewHashPreImageFromReader(r)
 	case tipe <= TypeCodeTuple+MaxTupleSize:
 		return NewSizedTupleFromReader(r, tipe-TypeCodeTuple)
+	case tipe == TypeCodeBufferHash:
+		return NewBufferHashValueFromReader(r)
+	case tipe == TypeCodeBuffer:
+		return NewBufferValueFromReader(r)
 	case tipe == TypeCodeCodePointStub:
 		return NewCodePointStubFromReader(r)
 	default:

@@ -199,7 +199,7 @@ contract GlobalInbox is
         address _sender,
         bytes memory _messageData
     ) private {
-        uint256 inboxSeqNum = _deliverMessageImpl(_chain, _kind, _sender, keccak256(_messageData));
+        uint256 inboxSeqNum = _deliverMessageImpl(_chain, _kind, _sender, Messages.messageDataHash(_messageData));
         emit MessageDelivered(_chain, _kind, _sender, inboxSeqNum, _messageData);
     }
 
